@@ -107,11 +107,8 @@ export async function POST(request: NextRequest) {
     console.error("Claim error:", error);
     let message = error instanceof Error ? error.message : "Failed to process claim";
     if (message.includes("Missing config")) {
-      const missing = [];
-      if (!process.env.HELIUS_RPC_URL) missing.push("HELIUS_RPC_URL");
-      if (!process.env.MERKLE_TREE_ADDRESS) missing.push("MERKLE_TREE_ADDRESS");
-      if (!process.env.MINT_KEYPAIR) missing.push("MINT_KEYPAIR");
-      message = `Minting not configured. Missing: ${missing.join(", ")}. Add ~0.7 SOL to creator wallet, then run: npm run setup`;
+      message =
+        "Badge minting is temporarily unavailable. Please try again later or contact the host.";
     }
     return NextResponse.json({ error: message }, { status: 500 });
   }

@@ -1,0 +1,18 @@
+{
+  "/_global-error/page": "app/_global-error/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/badge-image/png/route": "app/api/badge-image/png/route.js",
+  "/api/badge-image/route": "app/api/badge-image/route.js",
+  "/api/badge-meta/[id]/route": "app/api/badge-meta/[id]/route.js",
+  "/api/badges/[assetId]/route": "app/api/badges/[assetId]/route.js",
+  "/api/badges/route": "app/api/badges/route.js",
+  "/api/claim/route": "app/api/claim/route.js",
+  "/badge/[assetId]/page": "app/badge/[assetId]/page.js",
+  "/claim/page": "app/claim/page.js",
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/gallery/page": "app/gallery/page.js",
+  "/learn/page": "app/learn/page.js",
+  "/page": "app/page.js",
+  "/sitemap.xml/route": "app/sitemap.xml/route.js",
+  "/skills/page": "app/skills/page.js"
+}

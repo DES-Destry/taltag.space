@@ -1,0 +1,18 @@
+{
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/api/badge-image/png/route": "/api/badge-image/png",
+  "/api/badge-image/route": "/api/badge-image",
+  "/api/badge-meta/[id]/route": "/api/badge-meta/[id]",
+  "/api/badges/[assetId]/route": "/api/badges/[assetId]",
+  "/api/badges/route": "/api/badges",
+  "/api/claim/route": "/api/claim",
+  "/badge/[assetId]/page": "/badge/[assetId]",
+  "/claim/page": "/claim",
+  "/favicon.ico/route": "/favicon.ico",
+  "/gallery/page": "/gallery",
+  "/learn/page": "/learn",
+  "/page": "/",
+  "/sitemap.xml/route": "/sitemap.xml",
+  "/skills/page": "/skills"
+}

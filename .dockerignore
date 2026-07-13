@@ -1,0 +1,11 @@
+node_modules
+.next
+.git
+*.pem
+.env
+.env.local
+.env.*.local
+!.env.example
+README.md
+Untitled
+deploy-bundle

@@ -32,7 +32,7 @@ export async function mintBadge(params: MintBadgeParams): Promise<{ signature: s
 
   if (!rpcUrl || !merkleTreeAddress || !keypairBase64) {
     throw new Error(
-      "Missing config: HELIUS_RPC_URL, MERKLE_TREE_ADDRESS, MINT_KEYPAIR"
+      "Missing config: mint credentials are not set on the server"
     );
   }
 
