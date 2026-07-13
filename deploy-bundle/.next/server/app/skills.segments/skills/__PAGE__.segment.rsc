@@ -1,6 +1,0 @@
-1:"$Sreact.fragment"
-2:I[64835,["/_next/static/chunks/60cd76926a357084.js","/_next/static/chunks/43368e4c156e0768.js"],"SkillsCatalog"]
-3:I[97367,["/_next/static/chunks/ff1a16fafef87110.js","/_next/static/chunks/d2be314c3ece3fbe.js"],"OutletBoundary"]
-4:"$Sreact.suspense"
-0:{"buildId":"FfbDPVro3iakNX-60d9MQ","rsc":["$","$1","c",{"children":[["$","main",null,{"className":"relative mx-auto w-full max-w-6xl flex-1 px-5 sm:px-8 py-10 sm:py-14 lg:py-16","children":[["$","header",null,{"className":"mb-12 sm:mb-16","children":[["$","p",null,{"className":"tt-label mb-3 text-stamp","children":"Catalog"}],["$","h1",null,{"className":"tt-display mb-4 text-4xl text-ink sm:text-5xl md:text-[3.25rem]","children":"Skills catalog"}],["$","div",null,{"className":"tt-rule mb-5 h-0.5 w-14 bg-stamp"}],["$","p",null,{"className":"max-w-2xl text-lg leading-relaxed text-ink-soft","children":"Every domain uses the same verifiable minting flow. Browse the full list, pick your skill, then claim your badge."}],"$undefined"]}],["$","$L2",null,{"mode":"browse"}]]}],[["$","script","script-0",{"src":"/_next/static/chunks/43368e4c156e0768.js","async":true}]],["$","$L3",null,{"children":["$","$4",null,{"name":"Next.MetadataOutlet","children":"$@5"}]}]]}],"loading":null,"isPartial":false}
-5:null
