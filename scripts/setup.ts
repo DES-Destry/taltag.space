@@ -14,6 +14,8 @@ import { mplBubblegum } from "@metaplex-foundation/mpl-bubblegum";
 import { createTree } from "@metaplex-foundation/mpl-bubblegum";
 import { keypairIdentity } from "@metaplex-foundation/umi";
 import { generateSigner } from "@metaplex-foundation/umi";
+import { BUBBLEGUM_TREE_CONFIG } from "../src/lib/bubblegum-tree-config";
+import { formatLamports, parseLamportShortfall } from "./tree-errors";
 
 const root = resolve(process.cwd());
 dotenv.config({ path: resolve(root, ".env.local") });
@@ -70,7 +72,10 @@ async function main() {
     }
 
     const isDevnet = rpcUrl.includes("devnet");
-    console.log(`\n🌲 Creating Merkle tree (~8 badges, ~0.015 SOL / ~\$2 on ${isDevnet ? "devnet" : "mainnet"})...`);
+    const cap = 2 ** BUBBLEGUM_TREE_CONFIG.maxDepth;
+    console.log(
+      `\n🌲 Creating Merkle tree (up to ${cap.toLocaleString()} cNFTs; account rent is higher than a tiny demo tree on ${isDevnet ? "devnet" : "mainnet"})...`
+    );
     const umi = createUmi(rpcUrl).use(mplBubblegum());
     const keypair = umi.eddsa.createKeypairFromSecretKey(new Uint8Array(secretKey));
     umi.use(keypairIdentity(keypair));
@@ -78,14 +83,28 @@ async function main() {
     const merkleTree = generateSigner(umi);
     const builder = await createTree(umi, {
       merkleTree,
-      maxDepth: 3,
-      maxBufferSize: 8,
-      canopyDepth: 0,
+      ...BUBBLEGUM_TREE_CONFIG,
     });
 
-    const { signature } = await builder.sendAndConfirm(umi, {
-      confirm: { commitment: "confirmed" },
-    });
+    let signature: string | Uint8Array;
+    try {
+      const result = await builder.sendAndConfirm(umi, {
+        confirm: { commitment: "confirmed" },
+      });
+      signature = result.signature;
+    } catch (e) {
+      const short = parseLamportShortfall(e);
+      if (short) {
+        const payer = umi.identity.publicKey;
+        const delta = short.need - short.have;
+        console.error("\n❌ Payer wallet is under-funded for this tree size.");
+        console.error(`   Payer: ${payer}`);
+        console.error(`   Have:  ${formatLamports(short.have)}`);
+        console.error(`   Need:  ${formatLamports(short.need)} (this instruction)`);
+        console.error(`   Send at least ${formatLamports(delta)} more SOL to the payer, then retry.\n`);
+      }
+      throw e;
+    }
 
     merkleTreeAddress = String(merkleTree.publicKey);
     const envContent = readFileSync(envPath, "utf-8");
@@ -104,11 +123,13 @@ async function main() {
 }
 
 main().catch((e) => {
-  console.error(e);
-  if (e?.cause?.transactionLogs?.some((l: string) => l.includes("insufficient lamports"))) {
-    console.error("\n💡 Add ~0.015 SOL (~$2) to", process.env.BADGE_CREATOR_ADDRESS);
-    console.error("   Or use devnet: HELIUS_RPC_URL=https://devnet.helius-rpc.com/?api-key=YOUR_KEY");
-    console.error("   Then fund from https://faucet.solana.com (select Devnet)\n");
+  const short = parseLamportShortfall(e);
+  if (!short) console.error(e);
+  if (short && process.env.BADGE_CREATOR_ADDRESS) {
+    console.error("   (BADGE_CREATOR_ADDRESS in .env should match this payer.)");
+  }
+  if (short && String(process.env.HELIUS_RPC_URL ?? "").includes("devnet")) {
+    console.error("   Devnet faucet: https://faucet.solana.com (select Devnet)\n");
   }
   process.exit(1);
 });

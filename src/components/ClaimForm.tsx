@@ -1,11 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+import { BadgePreview } from "@/components/BadgePreview";
 import { useSkillCatalogSearch } from "@/hooks/useSkillCatalogSearch";
 
-type FieldKey = "skillId" | "name" | "email" | "wallet";
+type FieldKey = "skillId" | "name" | "wallet";
 
 export function ClaimForm() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { publicKey } = useWallet();
   const { query, setQuery, sections, trimmedQuery } = useSkillCatalogSearch();
   const [skillId, setSkillId] = useState("");
   const [name, setName] = useState("");
@@ -16,17 +23,21 @@ export function ClaimForm() {
   const [explorerUrl, setExplorerUrl] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<FieldKey, boolean>>>({});
 
+  useEffect(() => {
+    const fromUrl = searchParams.get("skill");
+    if (fromUrl) setSkillId(fromUrl);
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (publicKey) setWallet(publicKey.toBase58());
+  }, [publicKey]);
+
   const nameTrimmed = name.trim();
   const emailTrimmed = email.trim();
   const walletTrimmed = wallet.trim();
 
   function inputClass(hasError?: boolean) {
-    return [
-      "w-full px-4 py-3 rounded-xl bg-white/5 border text-white placeholder-zinc-500 focus:outline-none focus:ring-2",
-      hasError
-        ? "border-rose-500/60 focus:ring-rose-500/35 focus:border-rose-500/60"
-        : "border-white/10 focus:ring-cyan-500/50 focus:border-cyan-500/50",
-    ].join(" ");
+    return ["tt-input", hasError ? "tt-input-error" : ""].filter(Boolean).join(" ");
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -34,7 +45,6 @@ export function ClaimForm() {
     const nextFieldErrors: Partial<Record<FieldKey, boolean>> = {
       skillId: !skillId.trim(),
       name: !nameTrimmed,
-      email: !emailTrimmed,
       wallet: !walletTrimmed,
     };
     setFieldErrors(nextFieldErrors);
@@ -56,7 +66,7 @@ export function ClaimForm() {
         body: JSON.stringify({
           skillId: skillId.trim(),
           name: nameTrimmed,
-          email: emailTrimmed,
+          email: emailTrimmed || undefined,
           walletAddress: walletTrimmed,
         }),
       });
@@ -68,21 +78,20 @@ export function ClaimForm() {
           setFieldErrors({
             skillId: data.missingFields.includes("skillId"),
             name: data.missingFields.includes("name"),
-            email: data.missingFields.includes("email"),
             wallet: data.missingFields.includes("walletAddress"),
           });
         }
         throw new Error(data.error || "Claim failed");
       }
 
+      if (data.proofUrl) {
+        router.push(data.proofUrl);
+        return;
+      }
+
       setStatus("success");
       setMessage("Badge minted! Check your wallet.");
       if (data.explorerUrl) setExplorerUrl(data.explorerUrl);
-      setName("");
-      setEmail("");
-      setWallet("");
-      setSkillId("");
-      setFieldErrors({});
     } catch (err) {
       setStatus("error");
       setMessage(err instanceof Error ? err.message : "Something went wrong");
@@ -94,7 +103,7 @@ export function ClaimForm() {
       <div>
         <label
           htmlFor="claim-skill-search"
-          className={`block text-sm font-medium mb-2 ${fieldErrors.skillId ? "text-rose-300" : "text-zinc-400"}`}
+          className={`mb-2 block text-sm font-medium ${fieldErrors.skillId ? "text-stamp" : "text-ink-soft"}`}
         >
           Select your skill
         </label>
@@ -111,35 +120,38 @@ export function ClaimForm() {
           />
         </div>
         <div
-          className={`max-h-[min(70vh,28rem)] space-y-8 overflow-y-auto pr-1 -mr-1 ${
-            fieldErrors.skillId ? "ring-1 ring-rose-500/25 rounded-xl" : ""
+          className={`-mr-1 max-h-[min(70vh,28rem)] space-y-8 overflow-y-auto pr-1 ${
+            fieldErrors.skillId ? "rounded-sm ring-1 ring-stamp" : ""
           }`}
         >
           {sections.length === 0 ? (
-            <p className="rounded-xl border border-dashed border-white/10 py-8 text-center text-sm text-zinc-500">
-              No skills match &ldquo;{trimmedQuery}&rdquo;.
+            <p className="border border-dashed border-line py-8 text-center text-sm text-muted">
+              No skills match &ldquo;{trimmedQuery}&rdquo;.{" "}
+              <a href="/skills" className="tt-link">
+                Browse full catalog
+              </a>
             </p>
           ) : (
             sections.map(({ category, skills }) => (
               <div key={category.id}>
-                <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
-                  {category.title}
-                </p>
-                <p className="mb-3 text-xs text-zinc-600">{category.blurb}</p>
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                <p className="tt-label mb-1">{category.title}</p>
+                <p className="mb-3 text-xs text-muted">{category.blurb}</p>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
                   {skills.map((skill) => (
                     <button
                       key={skill.id}
                       type="button"
                       onClick={() => setSkillId(skill.id)}
-                      className={`flex flex-col items-center gap-1 p-3 rounded-xl border transition-all ${
+                      className={`flex flex-col items-center gap-1 border p-3 transition-all ${
                         skillId === skill.id
-                          ? "border-cyan-500/50 bg-cyan-500/10 ring-1 ring-cyan-500/30"
-                          : "border-white/10 hover:border-white/20 hover:bg-white/5"
+                          ? "border-stamp bg-[color-mix(in_srgb,var(--stamp)_8%,transparent)] ring-1 ring-stamp"
+                          : "border-line bg-paper-raised hover:border-ink/30"
                       }`}
                     >
                       <span className="text-xl">{skill.icon}</span>
-                      <span className="text-xs font-medium text-center leading-tight">{skill.name}</span>
+                      <span className="text-center text-xs font-medium leading-tight text-ink-soft">
+                        {skill.name}
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -149,9 +161,11 @@ export function ClaimForm() {
         </div>
       </div>
 
-      <div className="grid sm:grid-cols-2 gap-4">
+      <BadgePreview skillId={skillId} recipientName={nameTrimmed || undefined} />
+
+      <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label htmlFor="name" className="block text-sm font-medium text-zinc-400 mb-1.5">
+          <label htmlFor="name" className="mb-1.5 block text-sm font-medium text-ink-soft">
             Full name
           </label>
           <input
@@ -165,25 +179,28 @@ export function ClaimForm() {
           />
         </div>
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-zinc-400 mb-1.5">
-            Email
+          <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-ink-soft">
+            Email <span className="font-normal text-muted">(optional)</span>
           </label>
           <input
             id="email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            required
-            className={inputClass(fieldErrors.email)}
+            className={inputClass()}
             placeholder="jane@example.com"
           />
+          <p className="mt-1 text-xs text-muted">For operational notices about your mint only.</p>
         </div>
       </div>
 
       <div>
-        <label htmlFor="wallet" className="block text-sm font-medium text-zinc-400 mb-1.5">
-          Solana wallet address
-        </label>
+        <div className="mb-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <label htmlFor="wallet" className="block text-sm font-medium text-ink-soft">
+            Solana wallet address
+          </label>
+          <WalletMultiButton />
+        </div>
         <input
           id="wallet"
           type="text"
@@ -197,11 +214,7 @@ export function ClaimForm() {
 
       {message && (
         <div className="space-y-1">
-          <p
-            className={`text-sm ${
-              status === "success" ? "text-emerald-400" : "text-rose-400"
-            }`}
-          >
+          <p className={`text-sm ${status === "success" ? "text-[var(--ok)]" : "text-stamp"}`}>
             {message}
           </p>
           {explorerUrl && (
@@ -209,7 +222,7 @@ export function ClaimForm() {
               href={explorerUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-cyan-400 hover:text-cyan-300 underline"
+              className="tt-link text-sm underline"
             >
               View transaction on Solscan →
             </a>
@@ -217,11 +230,7 @@ export function ClaimForm() {
         </div>
       )}
 
-      <button
-        type="submit"
-        disabled={status === "loading"}
-        className="w-full py-3.5 rounded-xl font-medium bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:from-cyan-400 hover:to-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-      >
+      <button type="submit" disabled={status === "loading"} className="tt-btn w-full">
         {status === "loading" ? "Claiming..." : "Claim Skill Badge"}
       </button>
     </form>

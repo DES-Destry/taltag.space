@@ -16,6 +16,8 @@ import { mplBubblegum } from "@metaplex-foundation/mpl-bubblegum";
 import { createTree } from "@metaplex-foundation/mpl-bubblegum";
 import { keypairIdentity } from "@metaplex-foundation/umi";
 import { generateSigner } from "@metaplex-foundation/umi";
+import { BUBBLEGUM_TREE_CONFIG } from "../src/lib/bubblegum-tree-config";
+import { formatLamports, parseLamportShortfall } from "./tree-errors";
 
 async function main() {
   const rpcUrl = process.env.HELIUS_RPC_URL;
@@ -38,17 +40,34 @@ async function main() {
 
   const merkleTree = generateSigner(umi);
 
-  console.log("Creating Merkle tree (~8 badges, ~0.015 SOL / ~$2)...");
+  const cap = 2 ** BUBBLEGUM_TREE_CONFIG.maxDepth;
+  console.log(
+    `Creating Merkle tree (up to ${cap.toLocaleString()} cNFTs; higher rent than the old 8-slot demo tree)...`
+  );
   const builder = await createTree(umi, {
     merkleTree,
-    maxDepth: 3,
-    maxBufferSize: 8,
-    canopyDepth: 0,
+    ...BUBBLEGUM_TREE_CONFIG,
   });
 
-  const { signature } = await builder.sendAndConfirm(umi, {
-    confirm: { commitment: "confirmed" },
-  });
+  let signature: string | Uint8Array;
+  try {
+    const result = await builder.sendAndConfirm(umi, {
+      confirm: { commitment: "confirmed" },
+    });
+    signature = result.signature;
+  } catch (e) {
+    const short = parseLamportShortfall(e);
+    if (short) {
+      const payer = umi.identity.publicKey;
+      const delta = short.need - short.have;
+      console.error("\n❌ Payer wallet is under-funded for this tree size.");
+      console.error(`   Payer: ${payer}`);
+      console.error(`   Have:  ${formatLamports(short.have)}`);
+      console.error(`   Need:  ${formatLamports(short.need)} (this instruction)`);
+      console.error(`   Send at least ${formatLamports(delta)} more SOL to the payer, then retry.\n`);
+    }
+    throw e;
+  }
 
   console.log("\n✅ Merkle tree created!");
   console.log("MERKLE_TREE_ADDRESS=" + merkleTree.publicKey);
@@ -56,4 +75,7 @@ async function main() {
   console.log("\nAdd MERKLE_TREE_ADDRESS to your .env");
 }
 
-main().catch(console.error);
+main().catch((e) => {
+  if (!parseLamportShortfall(e)) console.error(e);
+  process.exit(1);
+});

@@ -7,25 +7,22 @@ import {
   type DASAsset,
 } from "@/lib/badge-from-das";
 
-// Fetches badges from Helius DAS API
-// Set HELIUS_API_KEY in .env.local for production
 const HELIUS_RPC = process.env.HELIUS_RPC_URL || "https://api.mainnet-beta.solana.com";
 const CREATOR_ADDRESS = process.env.BADGE_CREATOR_ADDRESS;
 
 export async function GET(request: NextRequest) {
   try {
-    console.log("CREATOR_ADDRESS", CREATOR_ADDRESS);
-    // If no creator configured, return demo badges for UI development
     if (!CREATOR_ADDRESS) {
       return NextResponse.json({
         badges: getDemoBadges(),
+        total: 5,
         source: "demo",
       });
     }
 
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get("page") || "1");
-    const limit = Math.min(parseInt(searchParams.get("limit") || "24"), 100);
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    const limit = Math.min(parseInt(searchParams.get("limit") || "24", 10), 100);
 
     const response = await fetch(HELIUS_RPC, {
       method: "POST",
@@ -42,8 +39,6 @@ export async function GET(request: NextRequest) {
         },
       }),
     });
-
-    console.log("response", response);
 
     const data = await response.json();
     if (data.error) {
@@ -66,13 +61,15 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       badges,
       total: result.total ?? badges.length,
+      page,
+      limit,
       source: "chain",
     });
   } catch (error) {
     console.error("Badges fetch error:", error);
-    // Fallback to demo on error
     return NextResponse.json({
       badges: getDemoBadges(),
+      total: 5,
       source: "demo",
     });
   }

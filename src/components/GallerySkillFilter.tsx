@@ -39,7 +39,7 @@ export function GallerySkillFilter({ value, onChange }: Props) {
 
   return (
     <div ref={rootRef} className="relative w-full lg:max-w-md">
-      <label htmlFor="gallery-skill-search" className="mb-1.5 block text-sm text-zinc-500">
+      <label htmlFor="gallery-skill-search" className="mb-1.5 block text-sm text-muted">
         Skill
       </label>
       <input
@@ -64,14 +64,14 @@ export function GallerySkillFilter({ value, onChange }: Props) {
             setOpen(false);
           }
         }}
-        className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/40 focus:border-cyan-500/40"
+        className="tt-input w-full text-sm"
       />
 
       {open && (
         <div
           id="gallery-skill-panel"
           role="listbox"
-          className="absolute z-30 mt-1 max-h-60 w-full overflow-y-auto rounded-xl border border-white/10 bg-[#0a0c0f] py-1 shadow-2xl shadow-black/60"
+          className="absolute z-30 mt-1 max-h-60 w-full overflow-y-auto border border-line bg-paper-raised py-1 shadow-xl"
         >
           <button
             type="button"
@@ -84,17 +84,15 @@ export function GallerySkillFilter({ value, onChange }: Props) {
             }}
             className={`flex w-full items-center px-3 py-2.5 text-left text-sm transition-colors ${
               value === ""
-                ? "bg-cyan-500/15 text-cyan-200"
-                : "text-zinc-300 hover:bg-white/5"
+                ? "bg-[color-mix(in_srgb,var(--stamp)_10%,transparent)] text-stamp"
+                : "text-ink-soft hover:bg-field"
             }`}
           >
             All skills
           </button>
           {displaySections.map(({ category, skills }) => (
             <div key={category.id}>
-              <div className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
-                {category.title}
-              </div>
+              <div className="tt-label px-3 py-1.5">{category.title}</div>
               {skills.map((s) => (
                 <button
                   key={s.id}
@@ -107,7 +105,9 @@ export function GallerySkillFilter({ value, onChange }: Props) {
                     setOpen(false);
                   }}
                   className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors ${
-                    value === s.id ? "bg-cyan-500/15 text-cyan-200" : "text-zinc-300 hover:bg-white/5"
+                    value === s.id
+                      ? "bg-[color-mix(in_srgb,var(--stamp)_10%,transparent)] text-stamp"
+                      : "text-ink-soft hover:bg-field"
                   }`}
                 >
                   <span className="text-base" aria-hidden>

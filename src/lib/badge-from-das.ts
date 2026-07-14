@@ -1,3 +1,7 @@
+import { badgeImagePath, badgeImageUrl } from "@/lib/badge-image";
+import { resolveSkillId } from "@/lib/skills";
+import { appBaseUrl } from "@/lib/site-url";
+
 export interface DASAsset {
   id: string;
   content?: {
@@ -20,13 +24,6 @@ export interface BadgePublic {
   verified?: boolean;
 }
 
-function appBaseUrl(): string {
-  return (
-    process.env.NEXT_PUBLIC_APP_URL ||
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://taltag.space")
-  );
-}
-
 export function mapDASAssetToBadge(asset: DASAsset): BadgePublic {
   const metadata = (asset.content?.metadata || {}) as Record<string, unknown>;
   const attributes = (metadata.attributes as Array<{ trait_type?: string; value?: string }>) || [];
@@ -35,15 +32,10 @@ export function mapDASAssetToBadge(asset: DASAsset): BadgePublic {
   const skillName = String(
     skillAttr?.value || rawName.replace(/\s+Badge\s+—.*$/, "").trim() || "Skill Badge"
   );
-  const skillId = String(metadata.skillId || skillName.toLowerCase().replace(/\s+/g, "-") || "unknown");
-  const imgFile = asset.content?.files?.find(
-    (f) =>
-      (f.mime || f.type) === "image/png" ||
-      (f.mime || f.type) === "image/jpeg" ||
-      (f.mime || f.type) === "image/svg+xml"
+  const skillId = resolveSkillId(
+    String(metadata.skillId || skillName.toLowerCase().replace(/\s+/g, "-") || "unknown"),
+    skillName
   );
-  const baseUrl = appBaseUrl();
-  const imageUri = imgFile?.uri || (metadata.image as string) || `${baseUrl}/api/badge-image?skill=${skillId}`;
   const recipientFromName = rawName.includes(" — ") ? rawName.split(" — ")[1]?.trim() : null;
   return {
     id: asset.id,
@@ -52,7 +44,7 @@ export function mapDASAssetToBadge(asset: DASAsset): BadgePublic {
     skillName,
     recipientName: String(metadata.recipientName || recipientFromName || "Anonymous"),
     walletAddress: asset.ownership?.owner || "",
-    imageUri,
+    imageUri: badgeImagePath(skillId),
     verified: asset.compression?.compressed ?? true,
   };
 }
@@ -88,7 +80,6 @@ export function solscanExplorerUrl(assetId: string, txSig: string | null): strin
 
 /** Placeholder badges when creator RPC is not configured or DAS fails */
 export function getDemoBadges(): BadgePublic[] {
-  const baseUrl = appBaseUrl();
   const skills = [
     { id: "demo-1", skillId: "react", skillName: "React", recipientName: "Alex Chen", walletAddress: "Demo...4xYz" },
     { id: "demo-2", skillId: "solana", skillName: "Solana", recipientName: "Jordan Lee", walletAddress: "Demo...8aBc" },
@@ -100,6 +91,11 @@ export function getDemoBadges(): BadgePublic[] {
     ...s,
     assetId: s.id,
     verified: true,
-    imageUri: `${baseUrl}/api/badge-image?skill=${s.skillId}`,
+    imageUri: badgeImagePath(s.skillId),
   }));
+}
+
+/** Absolute image URL for on-chain metadata (wallets, explorers). Prefer PNG for compatibility. */
+export function badgeMetadataImageUrl(skillId: string): string {
+  return badgeImageUrl(skillId, appBaseUrl()).replace("/api/badge-image?", "/api/badge-image/png?");
 }

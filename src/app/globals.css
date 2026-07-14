@@ -1,25 +1,373 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --paper: #eef2f6;
+  --paper-raised: #f8fafc;
+  --ink: #10141c;
+  --ink-soft: #3a4250;
+  --muted: #6b7380;
+  --line: #d5dbe3;
+  --stamp: #e8332a;
+  --stamp-deep: #c42820;
+  --field: #e4e9ef;
+  --ok: #1f7a4c;
+  --warn: #9a6b12;
+  --background: var(--paper);
+  --foreground: var(--ink);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-dm-sans);
+  --color-paper: var(--paper);
+  --color-paper-raised: var(--paper-raised);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-stamp: var(--stamp);
+  --color-stamp-deep: var(--stamp-deep);
+  --color-field: var(--field);
+  --font-sans: var(--font-body);
+  --font-display: var(--font-display);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+::selection {
+  background: color-mix(in srgb, var(--stamp) 28%, transparent);
+  color: var(--ink);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans), system-ui, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body), system-ui, sans-serif;
+  text-rendering: geometricPrecision;
+}
+
+.tt-shell {
+  min-height: 100dvh;
+  background:
+    radial-gradient(ellipse 70% 45% at 85% -5%, rgba(232, 51, 42, 0.07), transparent 55%),
+    radial-gradient(ellipse 50% 40% at -5% 40%, rgba(16, 20, 28, 0.04), transparent 50%),
+    linear-gradient(180deg, #f4f7fa 0%, var(--paper) 40%, #e8edf3 100%);
+}
+
+.tt-display {
+  font-family: var(--font-display), "Syne", system-ui, sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+}
+
+.tt-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.tt-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--stamp);
+  padding: 0.9rem 1.55rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #fff;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.tt-btn:hover {
+  background: var(--stamp-deep);
+}
+
+.tt-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.tt-btn-ink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ink);
+  padding: 0.9rem 1.55rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--paper-raised);
+  transition: background 0.15s ease;
+}
+
+.tt-btn-ink:hover {
+  background: color-mix(in srgb, var(--ink) 88%, white);
+}
+
+.tt-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid color-mix(in srgb, var(--ink) 28%, transparent);
+  background: transparent;
+  padding: 0.9rem 1.55rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--ink);
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+
+.tt-btn-ghost:hover {
+  border-color: var(--stamp);
+  color: var(--stamp);
+  background: color-mix(in srgb, var(--stamp) 6%, transparent);
+}
+
+.tt-panel {
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+}
+
+.tt-input {
+  width: 100%;
+  border: 1.5px solid var(--line);
+  background: var(--paper-raised);
+  padding: 0.75rem 0.9rem;
+  font-size: 0.9375rem;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.tt-input:focus {
+  border-color: var(--stamp);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--stamp) 18%, transparent);
+}
+
+.tt-input-error {
+  border-color: var(--stamp);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--stamp) 12%, transparent);
+}
+
+.tt-link {
+  color: var(--stamp);
+  font-weight: 600;
+  transition: color 0.15s ease;
+}
+
+.tt-link:hover {
+  color: var(--stamp-deep);
+}
+
+/* Registration-mark frame used as section atmosphere */
+.tt-marks {
+  background-image:
+    linear-gradient(var(--line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  background-size: 56px 56px;
+  background-position: -1px -1px;
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, black 20%, transparent 75%);
+}
+
+@keyframes tt-rise {
+  from {
+    opacity: 0;
+    transform: translateY(1.35rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes tt-stamp {
+  0% {
+    opacity: 0;
+    transform: scale(1.18) rotate(-2deg);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(0.96) rotate(0.5deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes tt-ink {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes tt-rule {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes tt-float {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-8px);
+  }
+}
+
+.tt-rise {
+  animation: tt-rise 0.85s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.tt-rise-delay-1 {
+  animation-delay: 0.1s;
+}
+
+.tt-rise-delay-2 {
+  animation-delay: 0.22s;
+}
+
+.tt-rise-delay-3 {
+  animation-delay: 0.34s;
+}
+
+.tt-stamp-in {
+  animation: tt-stamp 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.tt-ink-in {
+  animation: tt-ink 1s cubic-bezier(0.22, 1, 0.36, 1) 0.25s both;
+}
+
+.tt-rule {
+  transform-origin: left;
+  animation: tt-rule 0.75s cubic-bezier(0.22, 1, 0.36, 1) 0.18s both;
+}
+
+.tt-float {
+  animation: tt-float 4.5s ease-in-out infinite alternate;
+}
+
+@keyframes tt-orbit {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes tt-press-down {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  45% {
+    transform: translateY(6px) scale(0.985);
+  }
+  55% {
+    transform: translateY(6px) scale(0.985);
+  }
+}
+
+.tt-orbit {
+  animation: tt-orbit 48s linear infinite;
+}
+
+.tt-press {
+  animation: tt-press-down 5.5s ease-in-out infinite;
+}
+
+.tt-hero-grid {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--ink) 6%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--ink) 6%, transparent) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tt-rise,
+  .tt-stamp-in,
+  .tt-ink-in,
+  .tt-rule,
+  .tt-float,
+  .tt-orbit,
+  .tt-press {
+    animation: none;
+  }
+}
+
+/* Wallet adapter — stamp-press ink, no default purple */
+.wallet-adapter-button {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1;
+  height: 2.25rem;
+  padding: 0 0.9rem;
+}
+
+.wallet-adapter-button-trigger {
+  height: 2.25rem;
+  padding: 0 0.9rem;
+  border: 1.5px solid var(--ink);
+  border-radius: 0;
+  background: var(--ink);
+  color: var(--paper-raised);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.wallet-adapter-button-trigger:hover {
+  background: var(--stamp);
+  border-color: var(--stamp);
+}
+
+.wallet-adapter-button-trigger:not([disabled]):hover {
+  background-color: var(--stamp);
+}
+
+.wallet-adapter-modal-wrapper {
+  background: color-mix(in srgb, var(--ink) 55%, transparent);
+}
+
+.wallet-adapter-modal {
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: 0;
+  font-family: var(--font-body), system-ui, sans-serif;
+}
+
+.wallet-adapter-modal-title {
+  color: var(--ink);
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-weight: 800;
+}
+
+.wallet-adapter-modal-list .wallet-adapter-button {
+  background: var(--field);
+  border-radius: 0;
+  color: var(--ink);
+}
+
+.wallet-adapter-modal-list .wallet-adapter-button:hover {
+  background: color-mix(in srgb, var(--stamp) 10%, var(--field));
 }

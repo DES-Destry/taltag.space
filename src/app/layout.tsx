@@ -1,11 +1,17 @@
 import type { Metadata } from "next";
-import { DM_Sans } from "next/font/google";
+import { Figtree, Syne } from "next/font/google";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import "./globals.css";
 
-const dmSans = DM_Sans({
-  variable: "--font-dm-sans",
+const syne = Syne({
+  variable: "--font-display",
+  subsets: ["latin"],
+  weight: ["600", "700", "800"],
+});
+
+const figtree = Figtree({
+  variable: "--font-body",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
 });
@@ -55,8 +61,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary",
     title: "TalentTag — Skill Badges on Solana",
-    description:
-      "Claim verified skill badges as Compressed NFTs on Solana.",
+    description: "Claim verified skill badges as Compressed NFTs on Solana.",
     images: ["/icon.svg"],
   },
   robots: {
@@ -76,12 +81,6 @@ export const metadata: Metadata = {
   },
 };
 
-const gridStyle = {
-  backgroundImage: `linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)`,
-  backgroundSize: "48px 48px",
-} as const;
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -89,13 +88,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="scroll-smooth">
-      <body className={`${dmSans.variable} font-sans antialiased`}>
-        <div className="flex min-h-screen flex-col bg-[#0a0b0d] text-white">
-          <div
-            className="fixed inset-0 z-0 opacity-[0.03] pointer-events-none"
-            aria-hidden
-            style={gridStyle}
-          />
+      <body className={`${syne.variable} ${figtree.variable} font-sans antialiased`}>
+        <div className="tt-shell flex min-h-screen flex-col text-ink">
           <SiteHeader />
           <div className="relative z-[1] flex flex-1 flex-col">{children}</div>
           <SiteFooter />

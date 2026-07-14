@@ -246,3 +246,36 @@ export function filterSkillCategorySections(
     })
     .filter((row) => row.skills.length > 0);
 }
+
+const SKILL_ID_ALIASES: Record<string, string> = {
+  "c#": "csharp",
+  "c-sharp": "csharp",
+};
+
+/** Map on-chain / legacy ids and display names to catalog skill ids. */
+export function resolveSkillId(rawId?: string, skillName?: string): string {
+  const id = (rawId ?? "").trim().toLowerCase();
+  if (id) {
+    const exact = SKILLS.find((s) => s.id === id);
+    if (exact) return exact.id;
+    const aliased = SKILL_ID_ALIASES[id];
+    if (aliased) return aliased;
+  }
+
+  const name = (skillName ?? "").trim();
+  if (name) {
+    const byName = SKILLS.find((s) => s.name.toLowerCase() === name.toLowerCase());
+    if (byName) return byName.id;
+    const slug = name.toLowerCase().replace(/\s+/g, "-");
+    const bySlug = SKILLS.find((s) => s.id === slug);
+    if (bySlug) return bySlug.id;
+  }
+
+  return id || "unknown";
+}
+
+export function findSkill(skillId?: string, skillName?: string) {
+  const id = resolveSkillId(skillId, skillName);
+  return SKILLS.find((s) => s.id === id);
+}
+

@@ -1,7 +1,7 @@
 export interface BadgeClaimRequest {
   skillId: string;
   name: string;
-  email: string;
+  email?: string;
   walletAddress: string;
 }
 
