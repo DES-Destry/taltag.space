@@ -161,7 +161,11 @@ export function ClaimForm() {
         </div>
       </div>
 
-      <BadgePreview skillId={skillId} recipientName={nameTrimmed || undefined} />
+      <BadgePreview
+        skillId={skillId}
+        recipientName={nameTrimmed || undefined}
+        walletReady={Boolean(walletTrimmed)}
+      />
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
